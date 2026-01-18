@@ -55,6 +55,7 @@ function checkWin(board, lastRow, lastCol) {
 function checkDraw(board) {
     return board[0].every(cell => cell !== null);
 }
+
 module.exports = {
     ROWS,
     COLS,
