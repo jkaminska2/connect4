@@ -5,13 +5,14 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const gamesRoutes = require('./routes/games.routes');
 const authRoutes = require('./routes/auth.routes');
+const authMiddleware = require('./middleware/auth.middleware');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-app.use('/api/games', gamesRoutes);
+app.use('/api/games', authMiddleware, gamesRoutes);
 app.use('/api/auth' , authRoutes);
 app.use(express.static(path.join(__dirname, '..', 'public')));
 

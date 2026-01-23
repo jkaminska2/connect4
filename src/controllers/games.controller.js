@@ -3,10 +3,11 @@ const { dropDisc, checkWin, checkDraw } = require('../services/gameLogic');
 
 function createGameController(req, res) {
     const { player1Id, player2Id } = req.body;
+    const ownerId = req.user.id;
     if (!player1Id || !player2Id) {
         return res.status(400).json({ error: 'player1Id i player2Id są wymagane' });
     }
-    const game = Game.createGame(player1Id, player2Id);
+    const game = Game.createGame(ownerId, player1Id, player2Id);
     res.status(201).json(game);
 }
 
@@ -29,6 +30,9 @@ function deleteGameController(req, res) {
     if (!game) {
         return res.status(404).json({ error: 'Gra nie znaleziona '});
     }
+    if (game.ownerId !== req.user.id) {
+        return res.status(403).json({ error: 'Nie masz uprawnień do usunięcia tej gry' });
+    }
     Game.deleteGame(id);
     res.json({ message: 'Gra usunięta '});
 }
@@ -40,6 +44,12 @@ function makeMoveController(req, res) {
     if (!game) {
         return res.status(404).json({ error: 'Gra nie znaleziona' });
     }
+    if (player !== game.player1Id && player !== game.player2Id) {
+        return res.status(403).json({ error: 'Nie jesteś graczem w tej grze' });
+    }
+    if (game.currentPlayer !== player) {
+        return res.status(400).json({ error: 'Teraz nie jest kolej tego gracza' });
+    }
     try {
         const move = dropDisc(game.board, col, player);
         game.board = move.board;
@@ -47,6 +57,10 @@ function makeMoveController(req, res) {
             game.winner = player;
         } else if (checkDraw(game.board)) {
             game.winner = 'draw';
+        } else {
+            game.currentPlayer = (player === game.player1Id)
+                ? game.player2Id
+                : game.player1Id;
         }
         res.json(game);
     } catch (err) {

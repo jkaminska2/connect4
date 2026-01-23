@@ -3,10 +3,11 @@ const { createEmptyBoard } = require('../services/gameLogic');
 let games = [];
 let nextId = 1;
 
-function createGame(player1Id, player2Id) {
+function createGame(ownerId, player1Id, player2Id) {
     const game = {
         id: nextId++,
         board: createEmptyBoard(),
+        ownerId,
         player1Id,
         player2Id,
         currentPlayer: player1Id,
